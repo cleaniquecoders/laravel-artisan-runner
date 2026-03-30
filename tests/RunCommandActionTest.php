@@ -41,7 +41,7 @@ it('rejects commands not in the allowlist', function () {
 it('throws exception when dispatching disallowed command', function () {
     $action = new RunCommandAction;
 
-    expect(fn () => $action->dispatch('down'))->toThrow(\InvalidArgumentException::class);
+    expect(fn () => $action->dispatch('down'))->toThrow(InvalidArgumentException::class);
 });
 
 it('creates a pending log on dispatch', function () {

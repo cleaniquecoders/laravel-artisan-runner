@@ -2,6 +2,7 @@
 
 use CleaniqueCoders\ArtisanRunner\Enums\CommandStatus;
 use CleaniqueCoders\ArtisanRunner\Models\CommandLog;
+use Illuminate\Support\Collection;
 
 it('generates a uuid on creation', function () {
     $log = CommandLog::factory()->create();
@@ -20,7 +21,7 @@ it('casts status to CommandStatus enum', function () {
 it('casts parameters to a collection', function () {
     $log = CommandLog::factory()->create(['parameters' => ['--force' => true]]);
 
-    expect($log->parameters)->toBeInstanceOf(\Illuminate\Support\Collection::class)
+    expect($log->parameters)->toBeInstanceOf(Collection::class)
         ->and($log->parameters->get('--force'))->toBeTrue();
 });
 

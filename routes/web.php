@@ -1,6 +1,5 @@
 <?php
 
-use CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner;
 use Illuminate\Support\Facades\Route;
 
 Route::group([

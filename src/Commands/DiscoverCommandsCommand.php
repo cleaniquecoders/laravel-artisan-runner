@@ -86,13 +86,13 @@ class DiscoverCommandsCommand extends Command
         $deepIndent = str_repeat('    ', $indentLevel + 2);
         $deeperIndent = str_repeat('    ', $indentLevel + 3);
 
-        $lines = ["["];
+        $lines = ['['];
 
         foreach ($array as $command => $config) {
             $lines[] = "{$innerIndent}'{$command}' => [";
-            $lines[] = "{$deepIndent}'label' => ".var_export($config['label'], true).",";
-            $lines[] = "{$deepIndent}'description' => ".var_export($config['description'], true).",";
-            $lines[] = "{$deepIndent}'group' => ".var_export($config['group'], true).",";
+            $lines[] = "{$deepIndent}'label' => ".var_export($config['label'], true).',';
+            $lines[] = "{$deepIndent}'description' => ".var_export($config['description'], true).',';
+            $lines[] = "{$deepIndent}'group' => ".var_export($config['group'], true).',';
 
             if (empty($config['parameters'])) {
                 $lines[] = "{$deepIndent}'parameters' => [],";
@@ -109,7 +109,7 @@ class DiscoverCommandsCommand extends Command
                         $paramParts[] = "'required' => ".var_export($param['required'], true);
                     }
 
-                    $lines[] = "{$deeperIndent}[".implode(', ', $paramParts)."],";
+                    $lines[] = "{$deeperIndent}[".implode(', ', $paramParts).'],';
                 }
                 $lines[] = "{$deepIndent}],";
             }
