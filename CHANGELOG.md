@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-artisan-runner` will be documented in this file.
 
+## 1.2.1 - 2026-03-30
+
+### Fixed
+
+- Install command now correctly publishes logo assets — Spatie's `publish()` auto-prepends the package name to the tag, so `publish('assets')` is correct (not `publish('artisan-runner-assets')`)
+
 ## 1.2.0 - 2026-03-30
 
 ### Added
