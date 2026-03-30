@@ -66,9 +66,7 @@
             "providers": [
                 "CleaniqueCoders\\ArtisanRunner\\ArtisanRunnerServiceProvider"
             ],
-            "aliases": {
-                "ArtisanRunner": "CleaniqueCoders\\ArtisanRunner\\Facades\\ArtisanRunner"
-            }
+            "aliases": {}
         }
     },
     "minimum-stability": "dev",

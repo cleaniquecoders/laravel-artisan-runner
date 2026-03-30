@@ -4,6 +4,7 @@ namespace CleaniqueCoders\ArtisanRunner\Tests;
 
 use CleaniqueCoders\ArtisanRunner\ArtisanRunnerServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
@@ -20,6 +21,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
+            LivewireServiceProvider::class,
             ArtisanRunnerServiceProvider::class,
         ];
     }
@@ -27,11 +29,13 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
+        config()->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
 
-        /*
-         foreach (\Illuminate\Support\Facades\File::allFiles(__DIR__ . '/../database/migrations') as $migration) {
-            (include $migration->getRealPath())->up();
-         }
-         */
+        $migration = include __DIR__.'/../database/migrations/create_command_logs_table.php.stub';
+        $migration->up();
     }
 }
