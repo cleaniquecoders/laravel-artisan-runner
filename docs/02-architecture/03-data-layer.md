@@ -1,18 +1,27 @@
 # Data Layer
 
-The `CommandLog` model and its supporting enum.
+The `CommandLog` model and supporting enums.
 
 ## CommandStatus Enum
 
 ```php
-namespace CleaniqueCoders\ArtisanRunner\Enums;
-
 enum CommandStatus: string
 {
     case Pending   = 'pending';
     case Running   = 'running';
     case Completed = 'completed';
     case Failed    = 'failed';
+}
+```
+
+## DiscoveryMode Enum
+
+```php
+enum DiscoveryMode: string
+{
+    case Manual    = 'manual';
+    case Auto      = 'auto';
+    case Selection = 'selection';
 }
 ```
 
@@ -27,7 +36,7 @@ enum CommandStatus: string
 | `command` | String | Artisan command name |
 | `parameters` | JSON | Cast to `AsCollection` |
 | `status` | String | Cast to `CommandStatus` enum |
-| `output` | Text (nullable) | Command output |
+| `output` | LongText (nullable) | Command output |
 | `exit_code` | Integer (nullable) | Process exit code |
 | `ran_by_type` | String (nullable) | Polymorphic morph type |
 | `ran_by_id` | Integer (nullable) | Polymorphic morph ID |
@@ -42,7 +51,7 @@ enum CommandStatus: string
 $log->markAsRunning();                      // Sets status + started_at
 $log->markAsCompleted($output, $exitCode);  // Sets status + output + finished_at
 $log->markAsFailed($output, $exitCode);     // Sets status + output + finished_at
-$log->formattedDuration();                  // Human-readable duration
+$log->formattedDuration();                  // Human-readable "Xm Ys" format
 ```
 
 ### Scopes
@@ -55,8 +64,8 @@ CommandLog::recent($days);    // Where created_at >= now - $days
 
 ### Polymorphic ran_by
 
-The `ran_by` relationship uses `morphTo`, allowing any authenticatable model to be the executor.
-Nullable for system-triggered runs (e.g., scheduled tasks).
+The `ran_by` relationship uses `morphTo`, allowing any authenticatable model
+to be the executor. Nullable for system-triggered runs (e.g., scheduled tasks).
 
 ```php
 $log->ranBy;  // Returns the User (or any model) who triggered the command

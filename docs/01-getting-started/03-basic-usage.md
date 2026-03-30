@@ -1,11 +1,27 @@
 # Basic Usage
 
-Learn how to define allowed commands with parameters and organize them into groups.
+Learn how to define commands, use discovery modes, and view execution logs.
 
-## Defining Allowed Commands
+## Discovery Modes
 
-Every command you want to run from the UI must be explicitly listed in `config/artisan-runner.php`.
-No arbitrary command execution is possible.
+The package supports three modes for determining which commands are available:
+
+| Mode | Config Value | Description |
+|------|-------------|-------------|
+| Manual | `manual` | Only commands in `allowed_commands` (default) |
+| Auto | `auto` | Auto-discover all Artisan commands minus excluded ones |
+| Selection | `selection` | Auto-discover only commands in `included_commands` |
+
+Set the mode in `config/artisan-runner.php`:
+
+```php
+'discovery_mode' => 'manual', // 'manual', 'auto', or 'selection'
+```
+
+## Defining Allowed Commands (Manual Mode)
+
+Every command you want to run from the UI must be explicitly listed in
+`config/artisan-runner.php`. No arbitrary command execution is possible.
 
 ```php
 'allowed_commands' => [
@@ -15,19 +31,48 @@ No arbitrary command execution is possible.
         'group'       => 'Database',
         'parameters'  => [
             ['name' => '--force', 'type' => 'boolean', 'label' => 'Force', 'default' => false],
-            ['name' => '--step',  'type' => 'number',  'label' => 'Steps', 'default' => 1],
-        ],
-    ],
-    'make:model' => [
-        'label'       => 'Create Model',
-        'description' => 'Generate a new Eloquent model class.',
-        'group'       => 'Generators',
-        'parameters'  => [
-            ['name' => 'name', 'type' => 'text', 'label' => 'Model Name', 'required' => true],
+            ['name' => '--seed',  'type' => 'boolean', 'label' => 'Run seeders', 'default' => false],
         ],
     ],
 ],
 ```
+
+## Auto-Discovery Mode
+
+Set `discovery_mode` to `auto` to automatically discover all Artisan commands.
+Use exclusion lists to filter out unsafe commands:
+
+```php
+'discovery_mode' => 'auto',
+
+'excluded_commands' => [
+    'down', 'up', 'serve', 'tinker',
+    'db:wipe', 'migrate:fresh', 'migrate:reset',
+],
+
+'excluded_namespaces' => [
+    'make', 'schedule', 'queue', 'stub',
+],
+```
+
+Run `php artisan artisan-runner:discover --dry-run` to preview what gets discovered.
+
+## Selection Mode
+
+Only auto-discover specific commands:
+
+```php
+'discovery_mode' => 'selection',
+
+'included_commands' => [
+    'cache:clear',
+    'config:clear',
+    'migrate',
+    'migrate:status',
+],
+```
+
+Parameter schemas are auto-generated from the command's `InputDefinition`.
 
 ## Parameter Types
 
@@ -39,31 +84,21 @@ The Livewire UI renders form inputs dynamically based on each parameter's `type`
 | `text` | Text input | Model name, table name |
 | `number` | Number input | Step count, batch size |
 
-Each parameter supports these fields:
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `name` | Yes | The Artisan option/argument name (e.g., `--force`, `name`) |
-| `type` | Yes | One of `boolean`, `text`, `number` |
-| `label` | Yes | Human-readable label for the UI |
-| `default` | No | Default value |
-| `required` | No | Whether the parameter is mandatory |
+Arguments (no `--` prefix) and options (`--` prefix) are displayed in separate
+sections in the UI.
 
 ## Command Groups
 
-Use the `group` field to organize commands in the UI. Commands with the same group value are displayed together.
+Use the `group` field to organize commands in the UI dropdown.
+Commands with the same group are displayed together in an optgroup.
 
-Common group names: `Cache`, `Database`, `Generators`, `Queue`, `Maintenance`.
+In auto/selection modes, groups are derived from the command namespace
+(e.g., `cache:clear` becomes group "Cache").
 
 ## Viewing Execution Logs
 
-The `CommandLog` model stores every execution with:
-
-- Command name and parameters
-- Status (`pending`, `running`, `completed`, `failed`)
-- Output and exit code
-- Who ran it (`ran_by` polymorphic relationship)
-- Start, finish timestamps, and duration
+The `CommandLog` model stores every execution. Click any row in the
+Recent Executions table to expand and view the command output.
 
 Query logs programmatically:
 

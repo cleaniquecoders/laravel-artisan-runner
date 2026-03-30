@@ -3,29 +3,35 @@
 ## Package Overview
 
 **Package**: `cleaniquecoders/laravel-artisan-runner`
-**Purpose**: Run allowlisted Artisan commands from a Livewire UI. Logs every execution to DB and sends notifications on completion/failure.
-**Stack**: Laravel 11/12/13, Livewire 4, Tailwind CSS 4, PHP 8.2+
+**Purpose**: Run allowlisted or auto-discovered Artisan commands from a Livewire UI.
+Logs every execution to DB and sends notifications on completion/failure.
+**Stack**: Laravel 11/12/13, Livewire 4, Tailwind CSS 4, PHP 8.3+
 
 ---
 
 ## Architecture
 
-```
+```text
 src/
-├── Contracts/
-│   └── CommandRunnerContract.php   # isAllowed(), dispatch(), execute()
-├── Enums/
-│   └── CommandStatus.php           # pending | running | completed | failed
-├── Models/
-│   └── CommandLog.php              # UUID PK (public), auto-increment ID (internal)
 ├── Actions/
-│   └── RunCommandAction.php        # Implements CommandRunnerContract
+│   ├── DiscoverCommandsAction.php   # Auto-discovers Artisan commands
+│   ├── ResolveCommandsAction.php    # Resolves commands by discovery mode
+│   └── RunCommandAction.php         # Implements CommandRunnerContract
+├── Commands/
+│   └── DiscoverCommandsCommand.php  # artisan-runner:discover CLI
+├── Contracts/
+│   └── CommandRunnerContract.php    # isAllowed(), dispatch(), execute()
+├── Enums/
+│   ├── CommandStatus.php            # pending | running | completed | failed
+│   └── DiscoveryMode.php           # manual | auto | selection
 ├── Jobs/
-│   └── RunArtisanCommandJob.php    # ShouldQueue, tries=1, timeout=300
+│   └── RunArtisanCommandJob.php     # ShouldQueue, tries=1, timeout=300
+├── Livewire/
+│   └── CommandRunner.php            # UI component
+├── Models/
+│   └── CommandLog.php               # UUID PK (public), auto-increment ID (internal)
 ├── Notifications/
 │   └── CommandCompletedNotification.php  # mail + database channels
-├── Livewire/
-│   └── CommandRunner.php           # UI component
 config/
 └── artisan-runner.php
 database/migrations/
@@ -38,30 +44,46 @@ resources/views/livewire/
 
 ## Key Design Decisions
 
-### Allowlist-only
-Commands must be explicitly listed in `config/artisan-runner.php` under `allowed_commands`. No arbitrary command execution. Each entry defines `label`, `description`, `group`, and `parameters`.
+### Discovery Modes
 
-### Command parameters
-Each allowed command declares its own parameter schema:
+Three modes controlled by `config('artisan-runner.discovery_mode')`:
+
+- **manual** (default): Only `allowed_commands` from config
+- **auto**: Auto-discover all Artisan commands minus excluded ones, merge with manual
+- **selection**: Auto-discover only `included_commands`, merge with manual
+
+Manual entries always take precedence over discovered ones.
+
+### Allowlist-only (Manual Mode)
+
+Commands must be explicitly listed in `config/artisan-runner.php` under `allowed_commands`.
+Each entry defines `label`, `description`, `group`, and `parameters`.
+
+### Command Parameters
+
+Each command declares its parameter schema. Arguments (no `--` prefix) and
+options (`--` prefix) are rendered separately in the UI:
+
 ```php
 'parameters' => [
+    ['name' => 'model',    'type' => 'text',    'label' => 'Model', 'required' => true],
     ['name' => '--force',  'type' => 'boolean', 'label' => 'Force', 'default' => false],
     ['name' => '--step',   'type' => 'number',  'label' => 'Steps', 'default' => 1],
-    ['name' => 'model',    'type' => 'text',    'label' => 'Model', 'required' => true],
 ]
 ```
-The Livewire UI renders inputs dynamically based on this schema.
 
-### Async by default
-UI calls `RunCommandAction::dispatch()` → creates `CommandLog` (status: pending) → pushes `RunArtisanCommandJob` to queue → job calls `execute()` → updates log → fires notification.
+In auto/selection modes, parameter schemas are auto-generated from `InputDefinition`.
 
-Never run blocking commands in the HTTP request cycle.
+### Async by Default
+
+UI calls `RunCommandAction::dispatch()` → creates `CommandLog` (status: pending) →
+pushes `RunArtisanCommandJob` to queue → job calls `execute()` → updates log →
+fires notification.
 
 ### Polymorphic `ran_by`
-`command_logs.ran_by_type / ran_by_id` — morphTo, works with any `User` model. Nullable for system-triggered runs.
 
-### Notification target
-Configured via `config/artisan-runner.notification.notifiable`. Resolves a single notifiable model by identifier (e.g. email). Not broadcast to all users.
+`command_logs.ran_by_type / ran_by_id` — morphTo, works with any `User` model.
+Nullable for system-triggered runs.
 
 ---
 
@@ -70,34 +92,20 @@ Configured via `config/artisan-runner.notification.notifiable`. Resolves a singl
 - UUID generated on `creating` via `Str::uuid()`
 - `status` cast to `CommandStatus` enum
 - `parameters` cast to `AsCollection`
-- Key methods: `markAsRunning()`, `markAsCompleted($output, $exitCode)`, `markAsFailed($output, $exitCode)`, `formattedDuration()`
+- Key methods: `markAsRunning()`, `markAsCompleted($output, $exitCode)`,
+  `markAsFailed($output, $exitCode)`, `formattedDuration()`
 - Scopes: `completed()`, `failed()`, `recent($days)`
-
----
-
-## Adding a New Allowed Command
-
-Only in `config/artisan-runner.php`:
-
-```php
-'your:command' => [
-    'label'       => 'Human Label',
-    'description' => 'What it does.',
-    'group'       => 'GroupName',
-    'parameters'  => [
-        ['name' => '--option', 'type' => 'boolean', 'label' => 'Enable X', 'default' => false],
-    ],
-],
-```
-
-No code changes needed. The Livewire component reads config dynamically.
 
 ---
 
 ## Config Reference
 
 ```php
-// config/artisan-runner.php
+'discovery_mode' => 'manual',
+'excluded_commands' => ['down', 'up', 'serve', ...],
+'excluded_namespaces' => ['make', 'schedule', 'queue', 'stub'],
+'included_commands' => [],
+'discovery_cache_ttl' => 3600,
 
 'allowed_commands' => [...],
 
@@ -111,7 +119,7 @@ No code changes needed. The Livewire component reads config dynamically.
     ],
 ],
 
-'log_retention_days' => 30,  // null = keep forever
+'log_retention_days' => 30,
 
 'route' => [
     'prefix'     => 'artisan-runner',
@@ -132,50 +140,6 @@ it('rejects commands not in allowlist', function () {
     $action = new RunCommandAction;
     expect(fn () => $action->dispatch('down'))->toThrow(\InvalidArgumentException::class);
 });
-
-// Verify log lifecycle
-it('creates a pending log on dispatch', function () {
-    Queue::fake();
-    config(['artisan-runner.allowed_commands' => ['cache:clear' => ['label' => 'Clear Cache', 'parameters' => []]]]);
-
-    $log = app(RunCommandAction::class)->dispatch('cache:clear');
-
-    expect($log->status)->toBe(CommandStatus::Pending);
-    Queue::assertPushed(RunArtisanCommandJob::class);
-});
-
-// Verify execute updates log
-it('marks log as completed on success', function () {
-    $log    = CommandLog::factory()->pending()->create(['command' => 'cache:clear']);
-    $result = app(RunCommandAction::class)->execute($log);
-
-    expect($result->status)->toBe(CommandStatus::Completed)
-        ->and($result->finished_at)->not->toBeNull();
-});
-```
-
----
-
-## Log Pruning
-
-Add to your app's scheduled commands:
-
-```php
-// routes/console.php or Kernel.php
-Schedule::call(function () {
-    $days = config('artisan-runner.log_retention_days');
-    if ($days) {
-        \CleaniqueCoders\ArtisanRunner\Models\CommandLog::where('created_at', '<', now()->subDays($days))->delete();
-    }
-})->daily()->name('artisan-runner:prune-logs');
-```
-
----
-
-## Environment Variables
-
-```env
-ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
 ```
 
 ---
@@ -184,7 +148,16 @@ ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
 
 - Merges config
 - Loads migrations
-- Loads Livewire component (`artisan-runner::command-runner`)
+- Registers Livewire namespace (`artisan-runner::command-runner`)
 - Loads routes
 - Binds `CommandRunnerContract` → `RunCommandAction` in container
-- Registers `artisan-runner:install` publish command
+- Registers `artisan-runner:discover` command
+- Publishes logo assets
+
+---
+
+## Environment Variables
+
+```env
+ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
+```

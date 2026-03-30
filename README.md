@@ -21,12 +21,13 @@ and notifications are sent on completion or failure.
 
 ## Features
 
-- **Allowlist-only execution** - Commands must be explicitly configured, no arbitrary execution
-- **Livewire 4 UI** - Select commands, configure parameters, and view results in a web interface
+- **Three discovery modes** - Manual allowlist, auto-discover, or selective discovery
+- **Livewire 4 UI** - Select commands, configure parameters, and view output in real-time
 - **Async by default** - Commands run via queued jobs, never blocking HTTP requests
 - **Full audit trail** - Every execution logged with who, what, when, and result
+- **Output viewer** - Click any execution to expand terminal-style command output
 - **Notifications** - Mail and database notifications on completion or failure
-- **Dynamic parameters** - Boolean, text, and number inputs rendered from config
+- **Dynamic parameters** - Arguments and options rendered separately with proper input types
 
 ## Installation
 

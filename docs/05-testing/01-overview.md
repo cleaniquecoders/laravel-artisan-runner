@@ -4,8 +4,9 @@ How to test Laravel Artisan Runner features using Pest.
 
 ## Setup
 
-Tests use Orchestra Testbench and Pest. The `TestCase` base class registers the service provider
-and configures an in-memory database.
+Tests use Orchestra Testbench, Livewire, and Pest. The `TestCase` base class
+registers both `LivewireServiceProvider` and `ArtisanRunnerServiceProvider`,
+and configures an in-memory SQLite database.
 
 ```bash
 composer test
@@ -16,6 +17,21 @@ composer test
 - Test files mirror the `src/` directory structure under `tests/`
 - Use Pest syntax (no PHPUnit classes)
 - Architecture tests enforce no debugging functions (`dd`, `dump`, `ray`)
+
+## Test Coverage
+
+| Test File | What It Covers |
+|-----------|---------------|
+| `CommandStatusTest` | Enum values and case count |
+| `CommandLogTest` | UUID generation, casts, scopes, status methods, duration |
+| `RunCommandActionTest` | Allowlist enforcement, dispatch, execute, job queueing |
+| `RunArtisanCommandJobTest` | Job configuration, queuing, execution |
+| `CommandCompletedNotificationTest` | Channels, mail message, array representation |
+| `ResolveCommandsActionTest` | Manual/auto/selection modes, caching, precedence |
+| `DiscoverCommandsActionTest` | Discovery, exclusions, schema mapping, groups |
+| `DiscoverCommandsCommandTest` | Dry-run, JSON output |
+| `ConfigTest` | Default config values |
+| `ArchTest` | No debug functions |
 
 ## Example Tests
 
@@ -30,25 +46,19 @@ it('rejects commands not in allowlist', function () {
 });
 ```
 
-### Dispatch Creates Pending Log
+### Discovery Mode Resolution
 
 ```php
-it('creates a pending log on dispatch', function () {
-    Queue::fake();
+it('returns only allowed_commands in manual mode', function () {
+    config(['artisan-runner.discovery_mode' => 'manual']);
+    config(['artisan-runner.allowed_commands' => [
+        'cache:clear' => ['label' => 'Clear Cache', 'parameters' => []],
+    ]]);
 
-    config([
-        'artisan-runner.allowed_commands' => [
-            'cache:clear' => [
-                'label'      => 'Clear Cache',
-                'parameters' => [],
-            ],
-        ],
-    ]);
+    $commands = app(ResolveCommandsAction::class)->resolve();
 
-    $log = app(RunCommandAction::class)->dispatch('cache:clear');
-
-    expect($log->status)->toBe(CommandStatus::Pending);
-    Queue::assertPushed(RunArtisanCommandJob::class);
+    expect($commands)->toHaveKey('cache:clear')
+        ->and($commands)->toHaveCount(1);
 });
 ```
 
@@ -57,29 +67,13 @@ it('creates a pending log on dispatch', function () {
 ```php
 it('marks log as completed on success', function () {
     $log = CommandLog::factory()->pending()->create([
-        'command' => 'cache:clear',
+        'command' => 'config:clear',
     ]);
 
     $result = app(RunCommandAction::class)->execute($log);
 
     expect($result->status)->toBe(CommandStatus::Completed)
         ->and($result->finished_at)->not->toBeNull();
-});
-```
-
-### Failed Command
-
-```php
-it('marks log as failed on non-zero exit code', function () {
-    $log = CommandLog::factory()->pending()->create([
-        'command' => 'migrate',
-    ]);
-
-    // Simulate a failure scenario
-    $result = app(RunCommandAction::class)->execute($log);
-
-    expect($result->status)->toBe(CommandStatus::Failed)
-        ->and($result->exit_code)->not->toBe(0);
 });
 ```
 
@@ -91,6 +85,12 @@ composer test
 
 # With coverage
 composer test-coverage
+
+# Specific file
+vendor/bin/pest tests/CommandLogTest.php
+
+# Filter by name
+vendor/bin/pest --filter="creates a pending log"
 
 # Static analysis
 composer analyse

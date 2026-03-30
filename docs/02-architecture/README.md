@@ -2,7 +2,8 @@
 
 ## Overview
 
-How Laravel Artisan Runner is designed: the contract-based approach, async job flow, data layer, and service provider responsibilities.
+How Laravel Artisan Runner is designed: discovery pipeline, contract-based actions,
+async job flow, data layer, and service provider responsibilities.
 
 ## Table of Contents
 
@@ -12,11 +13,13 @@ High-level architecture, component diagram, and request flow.
 
 ### [2. Contracts and Actions](02-contracts-and-actions.md)
 
-The `CommandRunnerContract` interface and `RunCommandAction` implementation.
+The `CommandRunnerContract` interface, `RunCommandAction`, `ResolveCommandsAction`,
+and `DiscoverCommandsAction`.
 
 ### [3. Data Layer](03-data-layer.md)
 
-The `CommandLog` model, UUID primary keys, enum casting, and scopes.
+The `CommandLog` model, `CommandStatus` and `DiscoveryMode` enums, UUID primary keys,
+and scopes.
 
 ## Related Documentation
 
