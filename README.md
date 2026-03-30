@@ -17,6 +17,8 @@
 Run allowlisted Artisan commands from a Livewire UI. Every execution is logged to the database
 and notifications are sent on completion or failure.
 
+![Artisan Runner Screenshot](art/screenshot.png)
+
 ## Features
 
 - **Allowlist-only execution** - Commands must be explicitly configured, no arbitrary execution
