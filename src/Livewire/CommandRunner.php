@@ -16,6 +16,8 @@ class CommandRunner extends Component
 
     public ?string $lastLogUuid = null;
 
+    public ?int $viewingLogId = null;
+
     public function getCommandsProperty(): array
     {
         return app(ResolveCommandsAction::class)->resolve();
@@ -85,6 +87,11 @@ class CommandRunner extends Component
         $this->lastLogUuid = $log->uuid;
         $this->selectedCommand = '';
         $this->parameterValues = [];
+    }
+
+    public function toggleOutput(int $logId): void
+    {
+        $this->viewingLogId = $this->viewingLogId === $logId ? null : $logId;
     }
 
     public function render()

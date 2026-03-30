@@ -195,9 +195,15 @@
                 </thead>
                 <tbody class="divide-y divide-slate-50 dark:divide-slate-700/30">
                     @forelse ($recentLogs as $log)
-                        <tr class="transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-700/20">
+                        <tr
+                            wire:click="toggleOutput({{ $log->id }})"
+                            class="cursor-pointer transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-700/20 {{ $viewingLogId === $log->id ? 'bg-slate-50 dark:bg-slate-700/30' : '' }}"
+                        >
                             <td class="whitespace-nowrap px-6 py-3.5">
                                 <div class="flex items-center gap-2">
+                                    <svg class="h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform {{ $viewingLogId === $log->id ? 'rotate-90' : '' }}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                    </svg>
                                     <span class="font-mono text-sm font-medium text-slate-900 dark:text-white">{{ $log->command }}</span>
                                 </div>
                             </td>
@@ -250,6 +256,28 @@
                                 {{ $log->created_at->diffForHumans() }}
                             </td>
                         </tr>
+                        {{-- Output Panel --}}
+                        @if ($viewingLogId === $log->id && $log->output)
+                            <tr>
+                                <td colspan="5" class="px-6 py-0">
+                                    <div class="mb-4 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-600/50">
+                                        <div class="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-4 py-2 dark:border-slate-600/50 dark:bg-slate-700/50">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Output</span>
+                                            <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500">{{ $log->uuid }}</span>
+                                        </div>
+                                        <pre class="max-h-64 overflow-auto bg-slate-900 p-4 font-mono text-xs leading-relaxed text-emerald-400 dark:bg-slate-950">{{ trim($log->output) }}</pre>
+                                    </div>
+                                </td>
+                            </tr>
+                        @elseif ($viewingLogId === $log->id && ! $log->output)
+                            <tr>
+                                <td colspan="5" class="px-6 py-0">
+                                    <div class="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-600/50 dark:bg-slate-700/30">
+                                        <p class="text-xs text-slate-400 dark:text-slate-500">No output available{{ in_array($log->status->value, ['pending', 'running']) ? ' — command still executing...' : '.' }}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     @empty
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
