@@ -6,6 +6,14 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/cleaniquecoders/laravel-artisan-runner/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/cleaniquecoders/laravel-artisan-runner/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/cleaniquecoders/laravel-artisan-runner?style=flat-square)](https://packagist.org/packages/cleaniquecoders/laravel-artisan-runner)
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="art/logo-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="art/logo-light.svg">
+    <img src="art/logo-light.svg" alt="Laravel Artisan Runner" width="400">
+  </picture>
+</p>
+
 Run allowlisted Artisan commands from a Livewire UI. Every execution is logged to the database
 and notifications are sent on completion or failure.
 
