@@ -5,8 +5,9 @@ This guide walks through installing Laravel Artisan Runner and publishing its as
 ## Requirements
 
 - PHP 8.2+
-- Laravel 11 or 12
-- Livewire 3
+- Laravel 11, 12, or 13
+- Livewire 4
+- Tailwind CSS 4
 - A queue worker (Redis, database, SQS, etc.)
 
 ## Install via Composer

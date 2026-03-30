@@ -12,7 +12,7 @@ Set the retention period in `config/artisan-runner.php`:
 
 ## Schedule the Pruning
 
-Add to your application's scheduled commands in `routes/console.php` (Laravel 11+) or `app/Console/Kernel.php`:
+Add to your application's scheduled commands in `routes/console.php`:
 
 ```php
 use CleaniqueCoders\ArtisanRunner\Models\CommandLog;

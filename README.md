@@ -12,7 +12,7 @@ and notifications are sent on completion or failure.
 ## Features
 
 - **Allowlist-only execution** - Commands must be explicitly configured, no arbitrary execution
-- **Livewire 3 UI** - Select commands, configure parameters, and view results in a web interface
+- **Livewire 4 UI** - Select commands, configure parameters, and view results in a web interface
 - **Async by default** - Commands run via queued jobs, never blocking HTTP requests
 - **Full audit trail** - Every execution logged with who, what, when, and result
 - **Notifications** - Mail and database notifications on completion or failure

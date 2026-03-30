@@ -4,7 +4,7 @@
 
 **Package**: `cleaniquecoders/laravel-artisan-runner`
 **Purpose**: Run allowlisted Artisan commands from a Livewire UI. Logs every execution to DB and sends notifications on completion/failure.
-**Stack**: Laravel 11/12, Livewire 3, PHP 8.2+
+**Stack**: Laravel 11/12/13, Livewire 4, Tailwind CSS 4, PHP 8.2+
 
 ---
 
