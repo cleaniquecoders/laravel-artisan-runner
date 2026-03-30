@@ -7,6 +7,7 @@ use CleaniqueCoders\ArtisanRunner\Commands\DiscoverCommandsCommand;
 use CleaniqueCoders\ArtisanRunner\Contracts\CommandRunnerContract;
 use CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner;
 use Livewire\Livewire;
+use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -20,7 +21,14 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
             ->hasViews()
             ->hasMigration('create_command_logs_table')
             ->hasRoute('web')
-            ->hasCommand(DiscoverCommandsCommand::class);
+            ->hasCommand(DiscoverCommandsCommand::class)
+            ->hasInstallCommand(function (InstallCommand $command) {
+                $command
+                    ->publishConfigFile()
+                    ->publishMigrations()
+                    ->askToRunMigrations()
+                    ->publish('artisan-runner-assets');
+            });
     }
 
     public function packageRegistered(): void

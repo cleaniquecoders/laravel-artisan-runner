@@ -51,9 +51,8 @@ class DiscoverCommandsCommand extends Command
         $configPath = config_path('artisan-runner.php');
 
         if (! file_exists($configPath)) {
-            $this->error('Config file not found. Run: php artisan vendor:publish --tag=artisan-runner-config');
-
-            return self::FAILURE;
+            $this->warn('Config file not found — publishing now...');
+            $this->call('vendor:publish', ['--tag' => 'artisan-runner-config']);
         }
 
         $this->writeAllowedCommands($configPath, $commands);
