@@ -112,6 +112,23 @@ return [
             'group' => 'Cache',
             'parameters' => [],
         ],
+        'migrate' => [
+            'label' => 'Run Migrations',
+            'description' => 'Run the database migrations.',
+            'group' => 'Database',
+            'parameters' => [
+                ['name' => '--force', 'type' => 'boolean', 'label' => 'Force (production)', 'default' => false],
+                ['name' => '--seed', 'type' => 'boolean', 'label' => 'Run seeders', 'default' => false],
+                ['name' => '--step', 'type' => 'boolean', 'label' => 'Run individually (rollback one by one)', 'default' => false],
+                ['name' => '--pretend', 'type' => 'boolean', 'label' => 'Pretend (show SQL only)', 'default' => false],
+            ],
+        ],
+        'migrate:status' => [
+            'label' => 'Migration Status',
+            'description' => 'Show the status of each migration.',
+            'group' => 'Database',
+            'parameters' => [],
+        ],
     ],
 
     /*

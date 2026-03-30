@@ -66,46 +66,86 @@
                     </div>
                 </div>
 
-                {{-- Dynamic Parameters --}}
-                @if (count($this->parameters) > 0)
+                {{-- Arguments --}}
+                @php
+                    $arguments = collect($this->parameters)->filter(fn ($p) => ! str_starts_with($p['name'], '--'))->values();
+                    $options = collect($this->parameters)->filter(fn ($p) => str_starts_with($p['name'], '--'))->values();
+                @endphp
+
+                @if ($arguments->isNotEmpty())
+                    <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-600/50 dark:bg-slate-700/30">
+                        <h3 class="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+                            </svg>
+                            Arguments
+                        </h3>
+                        <div class="space-y-3">
+                            @foreach ($this->parameters as $index => $param)
+                                @if (! str_starts_with($param['name'], '--'))
+                                    <label class="block">
+                                        <span class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                                            {{ $param['label'] }}
+                                            <code class="rounded bg-slate-200/60 px-1.5 py-0.5 text-[10px] font-normal text-slate-500 dark:bg-slate-600 dark:text-slate-400">{{ $param['name'] }}</code>
+                                            @if ($param['required'] ?? false)
+                                                <span class="text-xs text-rose-500">required</span>
+                                            @endif
+                                        </span>
+                                        <input
+                                            type="text"
+                                            wire:model="parameterValues.{{ $index }}"
+                                            placeholder="{{ $param['label'] }}"
+                                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-violet-400"
+                                        >
+                                    </label>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Options --}}
+                @if ($options->isNotEmpty())
                     <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-600/50 dark:bg-slate-700/30">
                         <h3 class="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
                             </svg>
-                            Parameters
+                            Options
                         </h3>
                         <div class="space-y-3">
-                            @foreach ($this->parameters as $param)
-                                <div>
-                                    @if ($param['type'] === 'boolean')
-                                        <label class="group inline-flex cursor-pointer items-center gap-2.5">
-                                            <input
-                                                type="checkbox"
-                                                wire:model="parameterValues.{{ $param['name'] }}"
-                                                class="h-4 w-4 rounded border-slate-300 text-violet-600 shadow-sm transition focus:ring-2 focus:ring-violet-500/20 focus:ring-offset-0 dark:border-slate-500 dark:bg-slate-600"
-                                            >
-                                            <span class="text-sm text-slate-700 transition group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{{ $param['label'] }}</span>
-                                            <code class="rounded bg-slate-200/60 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-600 dark:text-slate-400">{{ $param['name'] }}</code>
-                                        </label>
-                                    @else
-                                        <label class="block">
-                                            <span class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                                                {{ $param['label'] }}
-                                                <code class="rounded bg-slate-200/60 px-1.5 py-0.5 text-[10px] font-normal text-slate-500 dark:bg-slate-600 dark:text-slate-400">{{ $param['name'] }}</code>
-                                                @if ($param['required'] ?? false)
-                                                    <span class="text-xs text-rose-500">required</span>
-                                                @endif
-                                            </span>
-                                            <input
-                                                type="{{ $param['type'] === 'number' ? 'number' : 'text' }}"
-                                                wire:model="parameterValues.{{ $param['name'] }}"
-                                                placeholder="{{ $param['label'] }}"
-                                                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-violet-400"
-                                            >
-                                        </label>
-                                    @endif
-                                </div>
+                            @foreach ($this->parameters as $index => $param)
+                                @if (str_starts_with($param['name'], '--'))
+                                    <div>
+                                        @if ($param['type'] === 'boolean')
+                                            <label class="group inline-flex cursor-pointer items-center gap-2.5">
+                                                <input
+                                                    type="checkbox"
+                                                    wire:model="parameterValues.{{ $index }}"
+                                                    class="h-4 w-4 rounded border-slate-300 text-violet-600 shadow-sm transition focus:ring-2 focus:ring-violet-500/20 focus:ring-offset-0 dark:border-slate-500 dark:bg-slate-600"
+                                                >
+                                                <span class="text-sm text-slate-700 transition group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white">{{ $param['label'] }}</span>
+                                                <code class="rounded bg-slate-200/60 px-1.5 py-0.5 text-[10px] text-slate-500 dark:bg-slate-600 dark:text-slate-400">{{ $param['name'] }}</code>
+                                            </label>
+                                        @else
+                                            <label class="block">
+                                                <span class="mb-1 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                    {{ $param['label'] }}
+                                                    <code class="rounded bg-slate-200/60 px-1.5 py-0.5 text-[10px] font-normal text-slate-500 dark:bg-slate-600 dark:text-slate-400">{{ $param['name'] }}</code>
+                                                    @if ($param['required'] ?? false)
+                                                        <span class="text-xs text-rose-500">required</span>
+                                                    @endif
+                                                </span>
+                                                <input
+                                                    type="{{ $param['type'] === 'number' ? 'number' : 'text' }}"
+                                                    wire:model="parameterValues.{{ $index }}"
+                                                    placeholder="{{ $param['label'] }}"
+                                                    class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-violet-400"
+                                                >
+                                            </label>
+                                        @endif
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>

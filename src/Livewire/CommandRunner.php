@@ -54,10 +54,9 @@ class CommandRunner extends Component
     {
         $this->parameterValues = [];
 
-        foreach ($this->parameters as $param) {
-            $name = $param['name'];
+        foreach ($this->parameters as $index => $param) {
             $default = $param['default'] ?? ($param['type'] === 'boolean' ? false : '');
-            $this->parameterValues[$name] = $default;
+            $this->parameterValues[$index] = $default;
         }
     }
 
@@ -67,11 +66,19 @@ class CommandRunner extends Component
             return;
         }
 
+        // Map index-based values back to param name keys
+        $mapped = [];
+        foreach ($this->parameters as $index => $param) {
+            if (isset($this->parameterValues[$index])) {
+                $mapped[$param['name']] = $this->parameterValues[$index];
+            }
+        }
+
         $runner = app(CommandRunnerContract::class);
 
         $log = $runner->dispatch(
             $this->selectedCommand,
-            $this->parameterValues,
+            $mapped,
             Auth::user()
         );
 
