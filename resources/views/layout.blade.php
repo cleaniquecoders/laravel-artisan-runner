@@ -28,11 +28,10 @@
         <header class="border-b border-slate-200/80 bg-white/70 backdrop-blur-lg dark:border-slate-700/50 dark:bg-slate-900/70">
             <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-blue-600 shadow-md shadow-violet-500/20">
-                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
-                        </svg>
-                    </div>
+                    <picture>
+                        <source media="(prefers-color-scheme: dark)" srcset="{{ asset('vendor/artisan-runner/logo-icon-dark.svg') }}">
+                        <img src="{{ asset('vendor/artisan-runner/logo-icon-light.svg') }}" alt="Artisan Runner" class="h-9 w-9">
+                    </picture>
                     <div>
                         <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Artisan Runner</h1>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Execute commands safely from the browser</p>

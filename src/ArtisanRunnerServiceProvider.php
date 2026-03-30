@@ -33,5 +33,9 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
             classPath: __DIR__.'/Livewire',
             classViewPath: __DIR__.'/../resources/views/livewire',
         );
+
+        $this->publishes([
+            __DIR__.'/../art' => public_path('vendor/artisan-runner'),
+        ], 'artisan-runner-assets');
     }
 }
