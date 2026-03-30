@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-artisan-runner` will be documented in this file.
 
+## 1.2.0 - 2026-03-30
+
+### Added
+
+- `php artisan artisan-runner:install` command — publishes config, migrations, assets and prompts to run migrations in one step
+- `artisan-runner:discover` now auto-publishes the config file when missing instead of erroring out
+
 ## 1.1.0 - 2026-03-30
 
 ### Added
