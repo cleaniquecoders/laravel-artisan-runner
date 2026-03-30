@@ -27,7 +27,7 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->publish('artisan-runner-assets');
+                    ->publish('assets');
             });
     }
 
