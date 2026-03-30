@@ -2,9 +2,9 @@
 
 namespace CleaniqueCoders\ArtisanRunner\Tests;
 
+use CleaniqueCoders\ArtisanRunner\ArtisanRunnerServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use CleaniqueCoders\ArtisanRunner\ArtisanRunnerServiceProvider;
 
 class TestCase extends Orchestra
 {

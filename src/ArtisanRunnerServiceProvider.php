@@ -2,9 +2,9 @@
 
 namespace CleaniqueCoders\ArtisanRunner;
 
+use CleaniqueCoders\ArtisanRunner\Commands\ArtisanRunnerCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use CleaniqueCoders\ArtisanRunner\Commands\ArtisanRunnerCommand;
 
 class ArtisanRunnerServiceProvider extends PackageServiceProvider
 {
