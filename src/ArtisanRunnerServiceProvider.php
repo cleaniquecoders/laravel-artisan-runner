@@ -29,12 +29,16 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        Livewire::addNamespace(
-            namespace: 'artisan-runner',
-            classNamespace: 'CleaniqueCoders\\ArtisanRunner\\Livewire',
-            classPath: __DIR__.'/Livewire',
-            classViewPath: __DIR__.'/../resources/views/livewire',
-        );
+        if (method_exists(Livewire::class, 'addNamespace')) {
+            Livewire::addNamespace(
+                namespace: 'artisan-runner',
+                classNamespace: 'CleaniqueCoders\\ArtisanRunner\\Livewire',
+                classPath: __DIR__.'/Livewire',
+                classViewPath: __DIR__.'/../resources/views/livewire',
+            );
+        } else {
+            Livewire::component('artisan-runner::command-runner', \CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner::class);
+        }
 
         $this->publishes([
             __DIR__.'/../art' => public_path('vendor/artisan-runner'),

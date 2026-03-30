@@ -22,7 +22,7 @@ with full audit logging and notifications.
 |---|---|---|---|
 | Language | PHP | ^8.3 | |
 | Framework | Laravel | 11 / 12 / 13 | |
-| Frontend | Livewire | 4 | Registered via `addNamespace()` |
+| Frontend | Livewire | 3 / 4 | LW4: `addNamespace()`, LW3: `component()` |
 | CSS | Tailwind CSS | 4 | CDN in layout, Tailwind classes in blade |
 | Testing | Pest | 4 | BDD-style `it()` blocks |
 | Static Analysis | Larastan | 3 | PHPStan level 5 |
@@ -40,7 +40,7 @@ with full audit logging and notifications.
 - Contracts in `src/Contracts/`, implementations in `src/Actions/`
 - Action classes: one class, focused responsibility
 - Queued jobs for async command execution
-- Livewire 4 namespace registration via `Livewire::addNamespace()`
+- Livewire registration: `addNamespace()` on LW4, `component()` fallback on LW3
 - Polymorphic `ran_by` for tracking who ran each command
 
 ### Directory Structure
@@ -96,8 +96,8 @@ Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
 - ❌ DON'T bypass allowlist — always go through `CommandRunnerContract`
 - ✅ DO use index-based keys for Livewire `parameterValues` (not param names)
 - ❌ DON'T use `wire:model="parameterValues.--force"` — dashes break Livewire binding
-- ✅ DO register Livewire components via `Livewire::addNamespace()` (Livewire 4 way)
-- ❌ DON'T use `Livewire::component()` — that's the Livewire 3 API
+- ✅ DO use `method_exists` check for Livewire registration (LW4: `addNamespace()`, LW3: `component()`)
+- ❌ DON'T hardcode either registration method — the service provider handles both
 - ✅ DO pass `recentLogs` via `render()` return — not as computed property
 - ❌ DON'T use computed properties for data that must refresh on poll
 - ✅ DO use `config:clear` (not `cache:clear`) in tests — cache store may not exist
@@ -130,7 +130,7 @@ Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
 
 ### Livewire
 
-- Use `Livewire::addNamespace()` for package component registration
+- Registration is version-aware: `addNamespace()` on LW4, `component()` on LW3
 - Views referenced as `artisan-runner::livewire.command-runner`
 - Component tag: `<livewire:artisan-runner::command-runner />`
 
@@ -142,6 +142,8 @@ Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
   (from testbench .env) doesn't exist. Use `config:clear` in tests instead.
 - Livewire 4 computed properties are cached within a single request. Data that
   needs to refresh on `wire:poll` must be passed through `render()` return.
+- `Livewire::addNamespace()` is LW4-only. The service provider uses
+  `method_exists` to fall back to `Livewire::component()` for LW3.
 - `wire:model` with `--` prefixed keys (e.g., `parameterValues.--force`) breaks
   in Livewire. Use index-based keys and map back to param names in `run()`.
 - `testbench serve` uses in-memory SQLite by default. Create a file-based
@@ -195,3 +197,4 @@ ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
 | 2026-03-30 | Added discovery modes (manual/auto/selection) |
 | 2026-03-30 | Added gotchas for Livewire 4, testbench, and parameter binding |
 | 2026-03-30 | Restructured to living document format with DO/DON'T and preferences |
+| 2026-03-30 | Added Livewire 3 support alongside Livewire 4 |
