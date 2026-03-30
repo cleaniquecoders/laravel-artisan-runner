@@ -1,100 +1,153 @@
 # CLAUDE.md — laravel-artisan-runner
 
-## Package Overview
+> This file is a **living document**. Claude updates it automatically whenever
+> a correction, preference, better pattern, or gotcha is discovered during work.
+> Last updated: 2026-03-30
 
-**Package**: `cleaniquecoders/laravel-artisan-runner`
-**Purpose**: Run allowlisted or auto-discovered Artisan commands from a Livewire UI.
-Logs every execution to DB and sends notifications on completion/failure.
-**Stack**: Laravel 11/12/13, Livewire 4, Tailwind CSS 4, PHP 8.3+
+---
+
+## Project Overview
+
+**Name:** Laravel Artisan Runner
+**Type:** Laravel package
+**Purpose:** Run allowlisted or auto-discovered Artisan commands from a Livewire UI
+with full audit logging and notifications.
+**Repo:** <https://github.com/cleaniquecoders/laravel-artisan-runner>
+
+---
+
+## Stack
+
+| Layer | Technology | Version | Notes |
+|---|---|---|---|
+| Language | PHP | ^8.3 | |
+| Framework | Laravel | 11 / 12 / 13 | |
+| Frontend | Livewire | 4 | Registered via `addNamespace()` |
+| CSS | Tailwind CSS | 4 | CDN in layout, Tailwind classes in blade |
+| Testing | Pest | 4 | BDD-style `it()` blocks |
+| Static Analysis | Larastan | 3 | PHPStan level 5 |
+| Code Style | Pint | 1.14 | Laravel preset |
+| Package Tools | Spatie Package Tools | 1.16 | `PackageServiceProvider` base |
+| Test Harness | Orchestra Testbench | 9 / 10 | With `LivewireServiceProvider` |
 
 ---
 
 ## Architecture
 
+### Key Patterns
+
+- `PackageServiceProvider` via Spatie for config/migration/views/routes registration
+- Contracts in `src/Contracts/`, implementations in `src/Actions/`
+- Action classes: one class, focused responsibility
+- Queued jobs for async command execution
+- Livewire 4 namespace registration via `Livewire::addNamespace()`
+- Polymorphic `ran_by` for tracking who ran each command
+
+### Directory Structure
+
 ```text
 src/
 ├── Actions/
-│   ├── DiscoverCommandsAction.php   # Auto-discovers Artisan commands
-│   ├── ResolveCommandsAction.php    # Resolves commands by discovery mode
-│   └── RunCommandAction.php         # Implements CommandRunnerContract
+│   ├── DiscoverCommandsAction.php
+│   ├── ResolveCommandsAction.php
+│   └── RunCommandAction.php
 ├── Commands/
-│   └── DiscoverCommandsCommand.php  # artisan-runner:discover CLI
+│   └── DiscoverCommandsCommand.php
 ├── Contracts/
-│   └── CommandRunnerContract.php    # isAllowed(), dispatch(), execute()
+│   └── CommandRunnerContract.php
 ├── Enums/
-│   ├── CommandStatus.php            # pending | running | completed | failed
-│   └── DiscoveryMode.php           # manual | auto | selection
+│   ├── CommandStatus.php
+│   └── DiscoveryMode.php
 ├── Jobs/
-│   └── RunArtisanCommandJob.php     # ShouldQueue, tries=1, timeout=300
+│   └── RunArtisanCommandJob.php
 ├── Livewire/
-│   └── CommandRunner.php            # UI component
+│   └── CommandRunner.php
 ├── Models/
-│   └── CommandLog.php               # UUID PK (public), auto-increment ID (internal)
+│   └── CommandLog.php
 ├── Notifications/
-│   └── CommandCompletedNotification.php  # mail + database channels
-config/
-└── artisan-runner.php
-database/migrations/
-└── ..._create_command_logs_table.php
-resources/views/livewire/
-└── command-runner.blade.php
+│   └── CommandCompletedNotification.php
+└── ArtisanRunnerServiceProvider.php
 ```
+
+### Database
+
+- **Primary key:** Auto-increment `id` (internal) + UUID `uuid` (public)
+- **UUID:** Generated on `creating` event via `Str::uuid()`
+- **Status:** Backed enum cast (`CommandStatus`)
+- **Parameters:** JSON column cast to `AsCollection`
+- **Polymorphic:** `ran_by_type` / `ran_by_id` via `morphTo()`
+
+### Discovery Pipeline
+
+```text
+Config (discovery_mode)
+  ├── manual  → allowed_commands only
+  ├── auto    → DiscoverCommandsAction - excluded → merge with manual
+  └── selection → DiscoverCommandsAction (included only) → merge with manual
+```
+
+Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
 
 ---
 
-## Key Design Decisions
+## DO / DON'T
 
-### Discovery Modes
-
-Three modes controlled by `config('artisan-runner.discovery_mode')`:
-
-- **manual** (default): Only `allowed_commands` from config
-- **auto**: Auto-discover all Artisan commands minus excluded ones, merge with manual
-- **selection**: Auto-discover only `included_commands`, merge with manual
-
-Manual entries always take precedence over discovered ones.
-
-### Allowlist-only (Manual Mode)
-
-Commands must be explicitly listed in `config/artisan-runner.php` under `allowed_commands`.
-Each entry defines `label`, `description`, `group`, and `parameters`.
-
-### Command Parameters
-
-Each command declares its parameter schema. Arguments (no `--` prefix) and
-options (`--` prefix) are rendered separately in the UI:
-
-```php
-'parameters' => [
-    ['name' => 'model',    'type' => 'text',    'label' => 'Model', 'required' => true],
-    ['name' => '--force',  'type' => 'boolean', 'label' => 'Force', 'default' => false],
-    ['name' => '--step',   'type' => 'number',  'label' => 'Steps', 'default' => 1],
-]
-```
-
-In auto/selection modes, parameter schemas are auto-generated from `InputDefinition`.
-
-### Async by Default
-
-UI calls `RunCommandAction::dispatch()` → creates `CommandLog` (status: pending) →
-pushes `RunArtisanCommandJob` to queue → job calls `execute()` → updates log →
-fires notification.
-
-### Polymorphic `ran_by`
-
-`command_logs.ran_by_type / ran_by_id` — morphTo, works with any `User` model.
-Nullable for system-triggered runs.
+- ✅ DO use `ResolveCommandsAction` to get available commands (not config directly)
+- ❌ DON'T bypass allowlist — always go through `CommandRunnerContract`
+- ✅ DO use index-based keys for Livewire `parameterValues` (not param names)
+- ❌ DON'T use `wire:model="parameterValues.--force"` — dashes break Livewire binding
+- ✅ DO register Livewire components via `Livewire::addNamespace()` (Livewire 4 way)
+- ❌ DON'T use `Livewire::component()` — that's the Livewire 3 API
+- ✅ DO pass `recentLogs` via `render()` return — not as computed property
+- ❌ DON'T use computed properties for data that must refresh on poll
+- ✅ DO use `config:clear` (not `cache:clear`) in tests — cache store may not exist
+- ❌ DON'T run blocking commands in HTTP cycle — always dispatch to queue
 
 ---
 
-## CommandLog Model Conventions
+## Preferences
 
-- UUID generated on `creating` via `Str::uuid()`
-- `status` cast to `CommandStatus` enum
-- `parameters` cast to `AsCollection`
-- Key methods: `markAsRunning()`, `markAsCompleted($output, $exitCode)`,
-  `markAsFailed($output, $exitCode)`, `formattedDuration()`
-- Scopes: `completed()`, `failed()`, `recent($days)`
+### Code Style
+
+- Return types declared explicitly
+- Strict types not enforced (standard Laravel package convention)
+- No docblocks unless adding non-obvious context
+
+### Testing
+
+- Pest with `it()` blocks (no `describe()` grouping currently)
+- Test file mirrors src path: `tests/RunCommandActionTest.php`
+- `beforeEach` for shared config setup
+- `Queue::fake()` for dispatch tests
+- `CommandLogFactory` with state methods: `pending()`, `running()`,
+  `completed()`, `failed()`
+
+### Git
+
+- Descriptive commit messages (not conventional commits prefix)
+- Co-authored-by Claude in commits
+- Don't push until explicitly asked
+
+### Livewire
+
+- Use `Livewire::addNamespace()` for package component registration
+- Views referenced as `artisan-runner::livewire.command-runner`
+- Component tag: `<livewire:artisan-runner::command-runner />`
+
+---
+
+## Gotchas
+
+- `cache:clear` fails in Orchestra Testbench because the `database` cache store
+  (from testbench .env) doesn't exist. Use `config:clear` in tests instead.
+- Livewire 4 computed properties are cached within a single request. Data that
+  needs to refresh on `wire:poll` must be passed through `render()` return.
+- `wire:model` with `--` prefixed keys (e.g., `parameterValues.--force`) breaks
+  in Livewire. Use index-based keys and map back to param names in `run()`.
+- `testbench serve` uses in-memory SQLite by default. Create a file-based
+  `database.sqlite` and run `migrate:fresh` for persistence across requests.
+- Artisan `migrate --step` is a boolean flag (run individually), not a number.
+  Don't confuse with `migrate:rollback --step` which is a count.
 
 ---
 
@@ -106,9 +159,7 @@ Nullable for system-triggered runs.
 'excluded_namespaces' => ['make', 'schedule', 'queue', 'stub'],
 'included_commands' => [],
 'discovery_cache_ttl' => 3600,
-
 'allowed_commands' => [...],
-
 'notification' => [
     'enabled'    => true,
     'channels'   => ['database', 'mail'],
@@ -118,41 +169,13 @@ Nullable for system-triggered runs.
         'value'      => env('ARTISAN_RUNNER_NOTIFY_EMAIL', ''),
     ],
 ],
-
 'log_retention_days' => 30,
-
 'route' => [
     'prefix'     => 'artisan-runner',
-    'middleware' => ['web', 'auth'],
+    'middleware'  => ['web', 'auth'],
     'name'       => 'artisan-runner.',
 ],
 ```
-
----
-
-## Testing Conventions
-
-Use Pest. Test file mirrors src path under `tests/`.
-
-```php
-// Verify allowlist enforcement
-it('rejects commands not in allowlist', function () {
-    $action = new RunCommandAction;
-    expect(fn () => $action->dispatch('down'))->toThrow(\InvalidArgumentException::class);
-});
-```
-
----
-
-## Service Provider Responsibilities
-
-- Merges config
-- Loads migrations
-- Registers Livewire namespace (`artisan-runner::command-runner`)
-- Loads routes
-- Binds `CommandRunnerContract` → `RunCommandAction` in container
-- Registers `artisan-runner:discover` command
-- Publishes logo assets
 
 ---
 
@@ -161,3 +184,14 @@ it('rejects commands not in allowlist', function () {
 ```env
 ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
 ```
+
+---
+
+## Changelog
+
+| Date | Change |
+|---|---|
+| 2026-03-30 | Initial CLAUDE.md created with full architecture |
+| 2026-03-30 | Added discovery modes (manual/auto/selection) |
+| 2026-03-30 | Added gotchas for Livewire 4, testbench, and parameter binding |
+| 2026-03-30 | Restructured to living document format with DO/DON'T and preferences |
