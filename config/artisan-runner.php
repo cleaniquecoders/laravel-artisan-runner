@@ -4,12 +4,86 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Discovery Mode
+    |--------------------------------------------------------------------------
+    |
+    | Controls how available commands are determined:
+    |   'manual'    - Only commands in allowed_commands (default, current behavior)
+    |   'auto'      - Auto-discover all Artisan commands minus excluded ones
+    |   'selection' - Auto-discover only commands listed in included_commands
+    |
+    */
+
+    'discovery_mode' => 'manual',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excluded Commands
+    |--------------------------------------------------------------------------
+    |
+    | Commands to exclude during auto-discovery. Applies to 'auto' and
+    | 'selection' modes.
+    |
+    */
+
+    'excluded_commands' => [
+        'down', 'up', 'serve', 'tinker', 'env', 'inspire',
+        'db:wipe', 'migrate:fresh', 'migrate:reset',
+        'vendor:publish', 'package:discover',
+        'artisan-runner:discover',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excluded Namespaces
+    |--------------------------------------------------------------------------
+    |
+    | Entire command namespaces to skip during discovery.
+    |
+    */
+
+    'excluded_namespaces' => [
+        'make',
+        'schedule',
+        'queue',
+        'stub',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Included Commands
+    |--------------------------------------------------------------------------
+    |
+    | When discovery_mode is 'selection', only these commands will be
+    | discovered. Their parameter schemas are auto-generated from the
+    | command's InputDefinition.
+    |
+    */
+
+    'included_commands' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Discovery Cache TTL
+    |--------------------------------------------------------------------------
+    |
+    | How long (in seconds) to cache discovered commands. Set to null to
+    | disable caching. Only applies to 'auto' and 'selection' modes.
+    |
+    */
+
+    'discovery_cache_ttl' => 3600,
+
+    /*
+    |--------------------------------------------------------------------------
     | Allowed Commands
     |--------------------------------------------------------------------------
     |
     | Only commands listed here can be executed from the UI. Each entry maps
     | an Artisan command signature to its label, description, group, and
-    | parameter schema.
+    | parameter schema. In 'auto' or 'selection' modes, these entries take
+    | precedence over auto-discovered ones (useful for custom labels or
+    | parameter overrides).
     |
     */
 

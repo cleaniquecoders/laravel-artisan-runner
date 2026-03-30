@@ -2,6 +2,7 @@
 
 namespace CleaniqueCoders\ArtisanRunner\Livewire;
 
+use CleaniqueCoders\ArtisanRunner\Actions\ResolveCommandsAction;
 use CleaniqueCoders\ArtisanRunner\Contracts\CommandRunnerContract;
 use CleaniqueCoders\ArtisanRunner\Models\CommandLog;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,7 @@ class CommandRunner extends Component
 
     public function getCommandsProperty(): array
     {
-        return config('artisan-runner.allowed_commands', []);
+        return app(ResolveCommandsAction::class)->resolve();
     }
 
     public function getGroupedCommandsProperty(): array

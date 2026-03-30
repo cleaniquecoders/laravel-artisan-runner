@@ -20,3 +20,25 @@ it('has route config', function () {
         ->and(config('artisan-runner.route.middleware'))->toBeArray()
         ->and(config('artisan-runner.route.name'))->toBe('artisan-runner.');
 });
+
+it('has discovery mode defaulting to manual', function () {
+    expect(config('artisan-runner.discovery_mode'))->toBe('manual');
+});
+
+it('has excluded commands config', function () {
+    expect(config('artisan-runner.excluded_commands'))->toBeArray()
+        ->and(config('artisan-runner.excluded_commands'))->toContain('down');
+});
+
+it('has excluded namespaces config', function () {
+    expect(config('artisan-runner.excluded_namespaces'))->toBeArray()
+        ->and(config('artisan-runner.excluded_namespaces'))->toContain('make');
+});
+
+it('has included commands config', function () {
+    expect(config('artisan-runner.included_commands'))->toBeArray();
+});
+
+it('has discovery cache ttl config', function () {
+    expect(config('artisan-runner.discovery_cache_ttl'))->toBe(3600);
+});

@@ -3,6 +3,7 @@
 namespace CleaniqueCoders\ArtisanRunner;
 
 use CleaniqueCoders\ArtisanRunner\Actions\RunCommandAction;
+use CleaniqueCoders\ArtisanRunner\Commands\DiscoverCommandsCommand;
 use CleaniqueCoders\ArtisanRunner\Contracts\CommandRunnerContract;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
@@ -17,7 +18,8 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigration('create_command_logs_table')
-            ->hasRoute('web');
+            ->hasRoute('web')
+            ->hasCommand(DiscoverCommandsCommand::class);
     }
 
     public function packageRegistered(): void

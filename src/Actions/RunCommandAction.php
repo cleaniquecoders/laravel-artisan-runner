@@ -14,7 +14,7 @@ class RunCommandAction implements CommandRunnerContract
 {
     public function isAllowed(string $command): bool
     {
-        return array_key_exists($command, config('artisan-runner.allowed_commands', []));
+        return array_key_exists($command, app(ResolveCommandsAction::class)->resolve());
     }
 
     public function dispatch(string $command, array $parameters = [], $ranBy = null): CommandLog
@@ -63,8 +63,8 @@ class RunCommandAction implements CommandRunnerContract
     protected function buildArtisanParameters(CommandLog $log): array
     {
         $params = [];
-        $allowedCommand = config("artisan-runner.allowed_commands.{$log->command}");
-        $schema = $allowedCommand['parameters'] ?? [];
+        $commands = app(ResolveCommandsAction::class)->resolve();
+        $schema = $commands[$log->command]['parameters'] ?? [];
         $values = $log->parameters ?? collect();
 
         foreach ($schema as $paramDef) {
