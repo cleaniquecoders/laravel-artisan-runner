@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace CleaniqueCoders\ArtisanRunner\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class ArtisanRunnerCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-artisan-runner';
 
     public $description = 'My command';
 
