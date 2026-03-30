@@ -2,6 +2,18 @@
 
 All notable changes to `laravel-artisan-runner` will be documented in this file.
 
+## 1.1.0 - 2026-03-30
+
+### Added
+
+- Livewire 3 support alongside Livewire 4 (`^3.0||^4.0`)
+- Version-aware component registration: `addNamespace()` on LW4, `component()` fallback on LW3
+
+### Infrastructure
+
+- Added Laravel 11 + Livewire 3 + Testbench 9 to CI matrix
+- Excluded PHP 8.5 from Laravel 11 matrix (unsupported)
+
 ## 1.0.0 - 2026-03-30
 
 ### 1.0.0 — Initial Release
