@@ -5,6 +5,7 @@ namespace CleaniqueCoders\ArtisanRunner;
 use CleaniqueCoders\ArtisanRunner\Actions\RunCommandAction;
 use CleaniqueCoders\ArtisanRunner\Commands\DiscoverCommandsCommand;
 use CleaniqueCoders\ArtisanRunner\Contracts\CommandRunnerContract;
+use CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -37,7 +38,7 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
                 classViewPath: __DIR__.'/../resources/views/livewire',
             );
         } else {
-            Livewire::component('artisan-runner::command-runner', \CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner::class);
+            Livewire::component('artisan-runner::command-runner', CommandRunner::class);
         }
 
         $this->publishes([
