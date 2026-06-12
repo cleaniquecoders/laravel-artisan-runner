@@ -8,6 +8,12 @@ use CleaniqueCoders\ArtisanRunner\Models\CommandLog;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
+/**
+ * @property-read array $commands
+ * @property-read array $groupedCommands
+ * @property-read array|null $selectedCommandConfig
+ * @property-read array $parameters
+ */
 class CommandRunner extends Component
 {
     public string $selectedCommand = '';

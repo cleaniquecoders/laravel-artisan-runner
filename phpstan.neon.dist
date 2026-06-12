@@ -8,3 +8,6 @@ parameters:
         - config
         - database
     tmpDir: build/phpstan
+    # This is a package: config/ here is the publishable stub, not the app
+    # config directory the rule guards, so env() calls in it are correct.
+    noEnvCallsOutsideOfConfig: false

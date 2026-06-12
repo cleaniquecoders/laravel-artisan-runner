@@ -8,8 +8,25 @@ use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $uuid
+ * @property string $command
+ * @property Collection|null $parameters
+ * @property CommandStatus $status
+ * @property string|null $output
+ * @property int|null $exit_code
+ * @property string|null $ran_by_type
+ * @property int|null $ran_by_id
+ * @property Carbon|null $started_at
+ * @property Carbon|null $finished_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class CommandLog extends Model
 {
     /** @use HasFactory<CommandLogFactory> */
@@ -97,7 +114,7 @@ class CommandLog extends Model
             return null;
         }
 
-        $seconds = $this->started_at->diffInSeconds($this->finished_at);
+        $seconds = (int) $this->started_at->diffInSeconds($this->finished_at);
 
         if ($seconds < 60) {
             return $seconds.'s';

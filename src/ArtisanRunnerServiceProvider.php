@@ -6,8 +6,8 @@ use CleaniqueCoders\ArtisanRunner\Actions\RunCommandAction;
 use CleaniqueCoders\ArtisanRunner\Commands\DiscoverCommandsCommand;
 use CleaniqueCoders\ArtisanRunner\Contracts\CommandRunnerContract;
 use CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner;
+use Livewire\Finder\Finder;
 use Livewire\Livewire;
-use Livewire\LivewireManager;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -39,7 +39,10 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        if (method_exists(LivewireManager::class, 'addNamespace')) {
+        // Livewire 4 ships Finder (and addNamespace()); Livewire 3 has neither.
+        // Don't method_exists() the Livewire facade — it proxies via
+        // __callStatic, so that check is always false (issue #7).
+        if (class_exists(Finder::class)) {
             Livewire::addNamespace(
                 namespace: 'artisan-runner',
                 classNamespace: 'CleaniqueCoders\\ArtisanRunner\\Livewire',
