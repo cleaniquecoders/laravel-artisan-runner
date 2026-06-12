@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-artisan-runner` will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- Livewire 4: `command-runner` component never resolved — the version check used `method_exists()` on the `Livewire` facade (always false, since `addNamespace()` lives on `LivewireManager` and is reached via `__callStatic`), so registration fell through to the LW3-only `component()` path ([#7](https://github.com/cleaniquecoders/laravel-artisan-runner/issues/7))
+
 ## 1.2.1 - 2026-03-30
 
 ### Fixed

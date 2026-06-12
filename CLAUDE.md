@@ -2,7 +2,7 @@
 
 > This file is a **living document**. Claude updates it automatically whenever
 > a correction, preference, better pattern, or gotcha is discovered during work.
-> Last updated: 2026-03-30
+> Last updated: 2026-06-12
 
 ---
 
@@ -96,8 +96,8 @@ Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
 - ❌ DON'T bypass allowlist — always go through `CommandRunnerContract`
 - ✅ DO use index-based keys for Livewire `parameterValues` (not param names)
 - ❌ DON'T use `wire:model="parameterValues.--force"` — dashes break Livewire binding
-- ✅ DO use `method_exists` check for Livewire registration (LW4: `addNamespace()`, LW3: `component()`)
-- ❌ DON'T hardcode either registration method — the service provider handles both
+- ✅ DO use `method_exists(LivewireManager::class, ...)` for Livewire registration (LW4: `addNamespace()`, LW3: `component()`)
+- ❌ DON'T call `method_exists()` on the `Livewire` facade — facade methods resolve via `__callStatic`, so it always returns false (issue #7)
 - ✅ DO pass `recentLogs` via `render()` return — not as computed property
 - ❌ DON'T use computed properties for data that must refresh on poll
 - ✅ DO use `config:clear` (not `cache:clear`) in tests — cache store may not exist
@@ -143,7 +143,13 @@ Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
 - Livewire 4 computed properties are cached within a single request. Data that
   needs to refresh on `wire:poll` must be passed through `render()` return.
 - `Livewire::addNamespace()` is LW4-only. The service provider uses
-  `method_exists` to fall back to `Livewire::component()` for LW3.
+  `method_exists(LivewireManager::class, 'addNamespace')` to fall back to
+  `Livewire::component()` for LW3. The check MUST target `LivewireManager`,
+  not the `Livewire` facade — the facade proxies via `__callStatic`, so
+  `method_exists()` on it is always false and LW4 silently fell into the
+  broken `component('ns::name')` path (issue #7). On LW4,
+  `Finder::resolveClassComponentClassName()` returns null for namespaced
+  names before consulting `classComponents`.
 - `wire:model` with `--` prefixed keys (e.g., `parameterValues.--force`) breaks
   in Livewire. Use index-based keys and map back to param names in `run()`.
 - `testbench serve` uses in-memory SQLite by default. Create a file-based
@@ -198,3 +204,4 @@ ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
 | 2026-03-30 | Added gotchas for Livewire 4, testbench, and parameter binding |
 | 2026-03-30 | Restructured to living document format with DO/DON'T and preferences |
 | 2026-03-30 | Added Livewire 3 support alongside Livewire 4 |
+| 2026-06-12 | Fixed issue #7: version check must test LivewireManager, not the facade |

@@ -7,6 +7,7 @@ use CleaniqueCoders\ArtisanRunner\Commands\DiscoverCommandsCommand;
 use CleaniqueCoders\ArtisanRunner\Contracts\CommandRunnerContract;
 use CleaniqueCoders\ArtisanRunner\Livewire\CommandRunner;
 use Livewire\Livewire;
+use Livewire\LivewireManager;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -38,7 +39,7 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        if (method_exists(Livewire::class, 'addNamespace')) {
+        if (method_exists(LivewireManager::class, 'addNamespace')) {
             Livewire::addNamespace(
                 namespace: 'artisan-runner',
                 classNamespace: 'CleaniqueCoders\\ArtisanRunner\\Livewire',
