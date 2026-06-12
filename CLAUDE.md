@@ -164,6 +164,16 @@ Manual entries always take precedence. Results cached via `discovery_cache_ttl`.
   `database.sqlite` and run `migrate:fresh` for persistence across requests.
 - Artisan `migrate --step` is a boolean flag (run individually), not a number.
   Don't confuse with `migrate:rollback --step` which is a count.
+- Anything referenced at runtime must NOT live in an export-ignored directory
+  (`.gitattributes`) — composer dist tarballs exclude it (issue #6). Runtime
+  assets live in `resources/dist/` (exposed via
+  `ArtisanRunnerServiceProvider::DIST_PATH`); `art/` is README-only.
+- Never use `__DIR__` in Blade views — it resolves to the compiled view path
+  in `storage/framework/views`, not the source file. Use a constant on a real
+  class (e.g. `DIST_PATH`) instead.
+- Larastan's `view-string` check on the `view()` helper passes locally but
+  fails in CI (the booted app there lacks the package view namespace). Use
+  `view()->make(...)` in `render()` — `Factory::make()` takes a plain string.
 
 ---
 
@@ -214,3 +224,4 @@ ARTISAN_RUNNER_NOTIFY_EMAIL=ops@yourdomain.com
 | 2026-03-30 | Added Livewire 3 support alongside Livewire 4 |
 | 2026-06-12 | Fixed issue #7: LW4 detected via `class_exists(Finder::class)`, not facade `method_exists` |
 | 2026-06-12 | Verified on Laravel 13 / Livewire 4; testbench 11 added; PHPStan now clean (0 errors) |
+| 2026-06-12 | Fixed issue #6: runtime assets moved to `resources/dist/` (art/ is export-ignored); inline logo fallback in layout |
