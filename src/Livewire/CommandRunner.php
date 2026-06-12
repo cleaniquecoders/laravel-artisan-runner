@@ -102,7 +102,9 @@ class CommandRunner extends Component
 
     public function render()
     {
-        return view('artisan-runner::livewire.command-runner', [
+        // view()->make() instead of view(): the helper's view-string check
+        // can't see package namespaces registered at boot.
+        return view()->make('artisan-runner::livewire.command-runner', [
             'recentLogs' => $this->getRecentLogs(),
         ]);
     }
