@@ -28,10 +28,18 @@
         <header class="border-b border-slate-200/80 bg-white/70 backdrop-blur-lg dark:border-slate-700/50 dark:bg-slate-900/70">
             <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
                 <div class="flex items-center gap-3">
-                    <picture>
-                        <source media="(prefers-color-scheme: dark)" srcset="{{ asset('vendor/artisan-runner/logo-icon-dark.svg') }}">
-                        <img src="{{ asset('vendor/artisan-runner/logo-icon-light.svg') }}" alt="Artisan Runner" class="h-9 w-9">
-                    </picture>
+                    @if (file_exists(public_path('vendor/artisan-runner/logo-icon-light.svg')))
+                        <picture>
+                            <source media="(prefers-color-scheme: dark)" srcset="{{ asset('vendor/artisan-runner/logo-icon-dark.svg') }}">
+                            <img src="{{ asset('vendor/artisan-runner/logo-icon-light.svg') }}" alt="Artisan Runner" class="h-9 w-9">
+                        </picture>
+                    @else
+                        {{-- Assets not published — inline the icons so the logo still renders --}}
+                        <picture>
+                            <source media="(prefers-color-scheme: dark)" srcset="data:image/svg+xml;base64,{{ base64_encode(file_get_contents(\CleaniqueCoders\ArtisanRunner\ArtisanRunnerServiceProvider::DIST_PATH.'/logo-icon-dark.svg')) }}">
+                            <img src="data:image/svg+xml;base64,{{ base64_encode(file_get_contents(\CleaniqueCoders\ArtisanRunner\ArtisanRunnerServiceProvider::DIST_PATH.'/logo-icon-light.svg')) }}" alt="Artisan Runner" class="h-9 w-9">
+                        </picture>
+                    @endif
                     <div>
                         <h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Artisan Runner</h1>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Execute commands safely from the browser</p>

@@ -14,6 +14,8 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class ArtisanRunnerServiceProvider extends PackageServiceProvider
 {
+    public const DIST_PATH = __DIR__.'/../resources/dist';
+
     public function configurePackage(Package $package): void
     {
         $package
@@ -53,8 +55,10 @@ class ArtisanRunnerServiceProvider extends PackageServiceProvider
             Livewire::component('artisan-runner::command-runner', CommandRunner::class);
         }
 
+        // Runtime assets live in resources/dist, not art/ — art/ is
+        // export-ignored and absent from composer dist installs (issue #6).
         $this->publishes([
-            __DIR__.'/../art' => public_path('vendor/artisan-runner'),
+            self::DIST_PATH => public_path('vendor/artisan-runner'),
         ], 'artisan-runner-assets');
     }
 }

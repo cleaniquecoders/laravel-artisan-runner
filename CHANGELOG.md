@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-artisan-runner` will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+- Logo assets were broken on every composer install — `art/` is export-ignored, so the dist tarball never contained the runtime SVGs and `vendor:publish --tag=artisan-runner-assets` errored. Runtime icons now ship in `resources/dist/`, and the layout falls back to inline data-URI logos when assets are not published ([#6](https://github.com/cleaniquecoders/laravel-artisan-runner/issues/6))
+
 ## 1.2.2 - 2026-06-12
 
 ### Fixed
